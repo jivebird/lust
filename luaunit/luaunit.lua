@@ -40,7 +40,7 @@ argv = arg
 assertEquals( expected, actual ).
 
 ]]--
-USE_EXPECTED_ACTUAL_IN_ASSERT_EQUALS = true
+USE_EXPECTED_ACTUAL_IN_ASSERT_EQUALS = false
 
 function assertError(f, ...)
 	-- assert that calling f with the arguments will raise an error
