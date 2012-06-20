@@ -49,7 +49,7 @@ function MockCall:isSameArgument(argument1, argument2)
 end
 
 function MockCall:isArgumentMatcher(argument)
-	return type(argument) == 'table'
+	return type(argument) == 'table' and argument._isArgumentMatcher
 end
 
 Mock = {}
@@ -154,7 +154,7 @@ function ArgumentMatcher:new(expected, method)
 	local matcher = {}
 	matcher.expected = expected
 	matcher.method = method
-	matcher.__isArgumentMatcher = true
+	matcher._isArgumentMatcher = true
 	setmetatable(matcher, self)
 	self.__index = self
 	

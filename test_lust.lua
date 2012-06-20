@@ -1,4 +1,4 @@
-require 'luaunit/luaunit'
+require 'luaunit'
 require 'lust'
 
 TestEndsWith = {}
@@ -144,6 +144,17 @@ end
 function TestMock:testVerifyHasntHappenedWithLessArgs()
 	self.mock:argMethod(2, 1)
 	assertError(function() verify(self.mock):argMethod(2) end)
+end
+
+function TestMock:testVerifyHasntHappenedWithTableArgs()
+	self.mock:argMethod({})
+	assertError(function() verify(self.mock):argMethod({}) end)
+end
+
+function TestMock:testVerifyHasHappenedWithTableArgs()
+	local table = {}
+	self.mock:argMethod(table)
+	assertNoError(function() verify(self.mock):argMethod(table) end)
 end
 
 function TestMock:testStubHasntHappened()
