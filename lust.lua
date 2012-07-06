@@ -11,6 +11,13 @@ function MockCall:new(name, arguments)
 	return call
 end
 
+function MockCall:getValue()
+	if self:hasAnswer() then
+		return self.value.callback()
+	end
+	return self.value
+end
+
 function MockCall:isSame(name, arguments)
 	return self.name == name and self:isSameArguments(arguments)
 end
@@ -52,6 +59,10 @@ function MockCall:isArgumentMatcher(argument)
 	return type(argument) == 'table' and argument._isArgumentMatcher
 end
 
+function MockCall:hasAnswer()
+	return type(self.value) == 'table' and self.value._isAnswer
+end
+
 Mock = {}
 
 function Mock:new()
@@ -91,7 +102,12 @@ end
 
 function Mock.getStub(mock, name, arguments)
 	local call = Mock.getCall(mock.stubs, name, arguments)
-	return call and call.value or nil
+	
+	if call then
+		return call:getValue()
+	end
+	
+	return nil
 end
 
 function Mock.getCall(list, name, arguments)
@@ -155,7 +171,7 @@ end
 
 ArgumentMatcher = {}
 
-function ArgumentMatcher:new(expected, method)
+function ArgumentMatcher:new(method, expected)
 	local matcher = {}
 	matcher.expected = expected
 	matcher.method = method
@@ -170,8 +186,32 @@ function ArgumentMatcher:matches(actual)
 	return self.method(self.expected, actual)
 end
 
-function match(expected, method)
-	return ArgumentMatcher:new(expected, method)
+function match(method, expected)
+	return ArgumentMatcher:new(method, expected)
+end
+
+function any()
+	return match(function() return true end)
+end
+
+Answer = {}
+
+function Answer:new(callback)
+	local answer = {}
+	answer._isAnswer = true
+	answer.callback = callback
+	setmetatable(answer, self)
+	self.__index = self
+	
+	return answer
+end
+
+function arrayAnswer(array)
+	local count = 0
+	return Answer:new(function() 
+		count = count + 1 
+		return count > table.getn(array) and nil or array[count]
+	end)
 end
 
 function assertTrue(value)
@@ -183,7 +223,7 @@ function assertFalse(value)
 end
 
 function assertNil(value)
-	assert(value == nil, 'Expected nil')
+	assert(value == nil, 'Expected nil was ' .. tostring(value))
 end
 
 function assertNotNil(value)

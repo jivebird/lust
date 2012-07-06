@@ -8,6 +8,11 @@ function string:endsWith(str)
 	return start ~= nil and stop == self:len()
 end
 
+function string:startsWith(str)
+	local start = self:find(str)
+	return start == 1
+end
+
 function TestEndsWith:testDoesntEndWith()
 	local str = 'Blah blah blah'
 	assert(not str:endsWith('blahe'))
@@ -20,6 +25,20 @@ function TestEndsWith:testDoesEndWith()
 	
 	local str = 'Another test'
 	assert(str:endsWith('r test'))
+end
+
+function TestEndsWith:testDoesntStartWith()
+	local str = 'Blah blah blah'
+	assert(not str:startsWith('Blahe'))
+	assert(not str:startsWith('blah'))
+end
+
+function TestEndsWith:testDoesStartWith()
+	local str = 'Blah blah blah'
+	assert(str:startsWith('Blah'))
+	
+	local str = 'Another test'
+	assert(str:startsWith('Another t'))
 end
 
 TestAssert = {}
@@ -60,9 +79,9 @@ function TestAssert:testAssertNilWithNil()
 end
 
 function TestAssert:testAssertNilWithNotNil()
-	local status, err = pcall(assertNil, {})
+	local status, err = pcall(assertNil, 12)
 	assert(not status)
-	assert(err:endsWith('Expected nil'))
+	assert(err:endsWith('Expected nil was 12'))
 end
 
 function TestAssert:testAssertNotNilWithNotNil()
@@ -203,22 +222,51 @@ end
 
 function TestMock:testArgumentMatcherWithVerifyDidntMatch()
 	self.mock:argMethod(15)
-	assertError(function() verify(self.mock):argMethod(match(15, incrementMatcher)) end)
+	assertError(function() verify(self.mock):argMethod(match(incrementMatcher, 15)) end)
 end
 
 function TestMock:testArgumentMatcherWithVerifyDoesMatch()
-	self.mock:argMethod(16, 10)
-	assertNoError(function() verify(self.mock):argMethod(match(17, incrementMatcher), 10) end)
+	self.mock:argMethod(14, 10)
+	assertNoError(function() verify(self.mock):argMethod(match(incrementMatcher, 15), 10) end)
 end
 
 function TestMock:testArgumentMatcherWithStubDidntMatch()
-	when(self.mock, 12):argMethod(match(20, incrementMatcher))
+	when(self.mock, 12):argMethod(match(incrementMatcher, 20))
 	assertNil(self.mock:argMethod(20))
 end
 
 function TestMock:testArgumentMatcherWithStubDoesMatch()
-	when(self.mock, 12):argMethod(match(20, incrementMatcher))
+	when(self.mock, 12):argMethod(match(incrementMatcher, 20))
 	assertEquals(12, self.mock:argMethod(19))
+end
+
+function TestMock:testAnyMatcherWithVerify()
+	self.mock:argMethod(234)
+	verify(self.mock):argMethod(any())
+end
+
+function TestMock:testAnyMatcherWithStub()
+	when(self.mock, 15):argMethod(any())
+	assertEquals(15, self.mock:argMethod(12))
+end
+
+function TestMock:testAnswer()
+	when(self.mock, Answer:new(function() return 102 end)):simpleMethod()
+	assertEquals(102, self.mock:simpleMethod())
+end
+
+function TestMock:testArrayAnswer()
+	when(self.mock, arrayAnswer({ 15, 12, 19 })):simpleMethod()
+	assertEquals(15, self.mock:simpleMethod())
+	assertEquals(12, self.mock:simpleMethod())
+	assertEquals(19, self.mock:simpleMethod())
+end
+
+function TestMock:testArrayAnswerOutOfBounds()
+	when(self.mock, arrayAnswer({ 15 })):simpleMethod()
+	assertEquals(15, self.mock:simpleMethod())
+	assertNil(self.mock:simpleMethod())
+	assertNil(self.mock:simpleMethod())
 end
 
 function incrementMatcher(expected, actual)
