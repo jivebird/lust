@@ -69,7 +69,12 @@ function Mock.addCall(mock, name, arguments)
 end
 
 function Mock.whenCalled(mock, value, name, arguments)
-	local call = MockCall:new(name, arguments)
+	local call = Mock.getCall(mock.stubs, name, arguments)
+	
+	if not call then
+		call = MockCall:new(name, arguments)
+	end
+	
 	call.value = value
 	table.insert(mock.stubs, call)
 end

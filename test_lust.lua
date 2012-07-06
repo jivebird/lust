@@ -166,6 +166,12 @@ function TestMock:testStubHasHappened()
 	assertEquals(15, self.mock:simpleMethod())
 end
 
+function TestMock:testStubAgain()
+	when(self.mock, 15):simpleMethod()
+	when(self.mock, 2):simpleMethod()
+	assertEquals(2, self.mock:simpleMethod())
+end
+
 function TestMock:testStubHasntHappenedWithArg()
 	assertNil(self.mock:argMethod(1))
 end
