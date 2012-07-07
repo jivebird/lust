@@ -239,3 +239,39 @@ function assertError(method)
 	local status, err = pcall(method)
 	assert(not status, 'Expected error.  Got none.')
 end
+
+function assertArraysEquals(array1, array2)
+	local success = true
+	if table.getn(array1) ~= table.getn(array2) then
+		success = false
+	end
+	
+	for k, v in ipairs(array1) do
+		if v ~= array2[k] then
+			success = false
+			break
+		end
+	end
+	
+	local err = ''
+	if not success then
+		err = 'Expected ' .. writeArray(array1) .. ' got ' .. writeArray(array2)
+	end
+	
+	assert(success, err)
+end
+
+function writeArray(array)
+	local str = '{'
+	local first = true
+	
+	for k, v in ipairs(array) do
+		if not first then str = str .. ', ' end
+		first = false
+		str = str .. tostring(v)
+	end
+	
+	str = str .. '}'
+	
+	return str
+end

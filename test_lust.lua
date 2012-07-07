@@ -117,6 +117,17 @@ function TestAssert:testAssertNoErrorWithError()
 	assert(err:endsWith('Expected true was false'))
 end
 
+function TestAssert:testAssertArraysEqualsWhenEqual()
+	local status = pcall(assertArraysEquals, {3, 4, 6}, {3, 4, 6})
+	assertTrue(status)
+end
+
+function TestAssert:testAssertArraysEqualsWhenNotEqual()
+	local status, err = pcall(assertArraysEquals, {3, 5, 6}, {3, 4, 6})
+	assertFalse(status)
+	assert(err:endsWith('Expected {3, 5, 6} got {3, 4, 6}'))
+end
+
 TestMock = {}
 
 function TestMock:setUp()
